@@ -7,14 +7,14 @@ const resend = new Resend(process.env.RESEND_KEY);
 
 const groupList = {
   "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com","wowns508@hyundaigreenfood.com","2511718@hyundaigreenfood.com"],
-  "세무": ["shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com"],
+  "세무": ["shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com"],
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com","yousc91@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com"]
 };
 
 console.log("로봇이 한국 시간 모드로 정상 가동되었습니다.");
 
 // 🎯 테스트를 위해 한국 시간 오후 12시 55분 실행!
-cron.schedule('18 13 * * *', async () => {
+cron.schedule('32 13 * * *', async () => {
   console.log("⏰ 정각 알림 로봇이 발송 작업을 시작합니다.");
   
   // 한국 기준 오늘 날짜(YYYY-MM-DD) 구하기
