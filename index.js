@@ -7,8 +7,8 @@ const resend = new Resend(process.env.RESEND_KEY);
 
 // 🎯 [실전 세팅] 실제 메일을 받을 팀원들의 주소로 최종 수정해 주세요!
 const groupList = {
-  "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com","wowns508@hyundaigreenfood.com","2511718@hyundaigreenfood.com"],
-  "세무": ["shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com"],
+  "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com","wowns508@hyundaigreenfood.com","2511718@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"],
+  "세무": ["jay556@hyundaigreenfood.com","shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com","wldb7007@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"],
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com","yousc91@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com"]
 };
 
@@ -16,7 +16,7 @@ console.log("🚀 로봇이 정상 가동되었습니다. (hgfnoreply.com 도메
 
 // ⏰ 매일 아침 9시 정각에 실행되도록 세팅되어 있습니다.
 // (만약 지금 당장 발송 테스트를 하고 싶다면 '0 9 * * *' 부분을 현재 시간의 2~3분 뒤로 수정하세요! 예: '45 13 * * *')
-cron.schedule('40 13 * * *', async () => {
+cron.schedule('0 9 * * *', async () => {
   console.log("⏰ 정각 알림 로봇이 발송 작업을 시작합니다.");
   
   const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
