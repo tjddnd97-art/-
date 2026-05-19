@@ -11,26 +11,31 @@ const groupList = {
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com","yousc91@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com"]
 };
 
-console.log("로봇이 한국 시간 모드로 켜졌습니다!");
+console.log("로봇이 한국 시간 모드로 정상 가동되었습니다.");
 
-// 🎯 테스트를 위해 한국 시간 오전 11시 35분 실행으로 설정!
-cron.schedule('40 11 * * *', async () => {
-  console.log("정각 알림 로봇이 작동을 시작합니다.");
+// 🎯 테스트를 위해 한국 시간 오후 12시 55분 실행!
+cron.schedule('55 12 * * *', async () => {
+  console.log("⏰ 정각 알림 로봇이 발송 작업을 시작합니다.");
   
-  // 한국 시간 기준으로 오늘 날짜 구하기
-  const now = new Date();
-  const krOffset = 9 * 60 * 60 * 1000;
-  const krDate = new Date(now.getTime() + krOffset);
-  const today = krDate.toISOString().split('T')[0];
+  // 한국 기준 오늘 날짜(YYYY-MM-DD) 구하기
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
+  console.log(`[안내] 로봇이 인식한 오늘 날짜는 [ ${today} ] 입니다.`);
 
-  const { data: tasks } = await supabase
+  // Supabase 조회
+  const { data: tasks, error } = await supabase
     .from('tasks')
     .select('*')
     .eq('due_date', today)
     .eq('is_sent', false);
 
+  // 🚨 만약 에러가 있다면 로그에 확실하게 찍어줍니다.
+  if (error) {
+    console.log("❌ Supabase 연결/조회 실패 원인:", error);
+    return;
+  }
+
   if (!tasks || tasks.length === 0) {
-    console.log(`${today} 날짜에 보낼 일정이 없습니다.`);
+    console.log(`⚠️ ${today} 날짜에 일치하는 데이터가 데이터베이스에 존재하지 않습니다.`);
     return;
   }
 
@@ -56,13 +61,13 @@ cron.schedule('40 11 * * *', async () => {
       });
 
       await supabase.from('tasks').update({ is_sent: true }).eq('id', task.id);
-      console.log(`${task.task_name} 메일 발송 완료!`);
+      console.log(`✅ [${task.task_name}] 메일 발송 완료 및 발송 처리 완료!`);
       
     } catch (error) {
-      console.log("에러 발생:", error);
+      console.log("❌ 이메일 발송 중 에러 발생:", error);
     }
   }
 }, {
   scheduled: true,
-  timezone: "Asia/Seoul" // 🎯 한국 시간 동기화 완료!
+  timezone: "Asia/Seoul"
 });
