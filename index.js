@@ -54,7 +54,7 @@ cron.schedule('6 13 * * *', async () => {
       }
 
       await resend.emails.send({
-        from: '재무알림봇 <noreply@hgfnoreply.com>', 
+        from: '업무알림봇 <onboarding@resend.dev>', 
         to: targetEmails,
         subject: `[업무 알림] 오늘 할 일: ${task.task_name}`,
         html: `<p>안녕하세요!</p><p>오늘은 <b>${task.task_name}</b> 업무를 처리하는 날입니다.</p>`
