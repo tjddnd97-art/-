@@ -14,8 +14,8 @@ const groupList = {
 
 console.log("로봇이 켜졌습니다! 그룹 발송 기능이 추가되었습니다.");
 
-// 매일 아침 9시 실행
-cron.schedule('0 9 * * *', async () => {
+// 매일  12시 실행
+cron.schedule('20 11 * * *', async () => {
   const today = new Date().toISOString().split('T')[0];
 
   const { data: tasks } = await supabase
