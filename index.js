@@ -47,7 +47,7 @@ cron.schedule('0 9 * * *', async () => {
 
       // 4. 추출된 여러 명에게 한 번에 이메일 발송!
       await resend.emails.send({
-        from: 'onboarding@resend.dev',
+        from: '업무알림봇 <calendar@hgfnoreply.com>',
         to: targetEmails,
         subject: `[업무 알림] 오늘 할 일: ${task.task_name}`,
         html: `<p>안녕하세요!</p><p>오늘은 <b>${task.task_name}</b> 업무를 처리하는 날입니다.</p>`
