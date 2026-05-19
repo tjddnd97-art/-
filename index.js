@@ -14,7 +14,7 @@ const groupList = {
 
 console.log("로봇이 켜졌습니다! 그룹 발송 기능이 추가되었습니다.");
 
-// 매일  12시 실행
+// 테스트를 위해 오전 11시 20분 실행으로 변경
 cron.schedule('20 11 * * *', async () => {
   const today = new Date().toISOString().split('T')[0];
 
