@@ -14,7 +14,7 @@ const groupList = {
 console.log("로봇이 한국 시간 모드로 켜졌습니다!");
 
 // 🎯 테스트를 위해 한국 시간 오전 11시 35분 실행으로 설정!
-cron.schedule('35 11 * * *', async () => {
+cron.schedule('40 11 * * *', async () => {
   console.log("정각 알림 로봇이 작동을 시작합니다.");
   
   // 한국 시간 기준으로 오늘 날짜 구하기
