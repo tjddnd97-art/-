@@ -14,9 +14,13 @@ const groupList = {
 
 console.log("로봇이 켜졌습니다! 그룹 발송 기능이 추가되었습니다.");
 
-// 테스트를 위해 오전 11시 20분 실행으로 변경
-cron.schedule('20 11 * * *', async () => {
-  const today = new Date().toISOString().split('T')[0];
+// timezone 설정을 추가해서 확실하게 한국 시간 오전 11시 35분에 작동하도록 합니다.
+cron.schedule('35 11 * * *', async () => {
+  // 기존 코드 내용...
+}, {
+  scheduled: true,
+  timezone: "Asia/Seoul" // 👈 이 줄이 들어가야 한국 시간을 알아먹습니다!
+});
 
   const { data: tasks } = await supabase
     .from('tasks')
