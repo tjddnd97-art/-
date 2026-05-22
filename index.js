@@ -13,7 +13,7 @@ const groupList = {
 };
 
 // 🔗 여기에 Retool 퍼블릭 링크를 넣어주세요!
-const retoolLink = "https://(여기에_복사해두신_Retool_퍼블릭링크를_넣어주세요)";
+const retoolLink = "https://tjddnd97.retool.com/embedded/public/2ffe3b2d-4793-4cdb-8690-b174710c993f";
 
 console.log("🚀 로봇이 정상 가동되었습니다. (D-5, D-1, 당일 3회 알림 모드)");
 
