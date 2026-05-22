@@ -10,7 +10,6 @@ const groupList = {
   "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com","wowns508@hyundaigreenfood.com","2511718@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"],
   "세무": ["jay556@hyundaigreenfood.com","shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com","wldb7007@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"],
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com","yousc91@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"]
-  "실험": ["raebin0511@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com"]
 };
 
 // 🔗 여기에 Retool 퍼블릭 링크를 넣어주세요!
