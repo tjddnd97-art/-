@@ -10,6 +10,7 @@ const groupList = {
   "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com","wowns508@hyundaigreenfood.com","2511718@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"],
   "세무": ["jay556@hyundaigreenfood.com","shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com","wldb7007@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"],
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com","yousc91@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com","jhjang@hyundaigreenfood.com"]
+  "실험": ["raebin0511@hyundaigreenfood.com","tjddnd97@hyundaigreenfood.com"]
 };
 
 // 🔗 여기에 Retool 퍼블릭 링크를 넣어주세요!
@@ -82,8 +83,8 @@ cron.schedule('20 11 * * *', async () => {
       // 📧 메일 본문 템플릿
       const htmlBody = `
         <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
-          <p>안녕하세요, 재무회계팀 업무일정 자동 알림입니다.</p>
-          <p>다가오는 주요 세무/결산 업무 일정을 안내해 드립니다.<br>
+          <p>안녕하세요, 재무회계파트 업무일정 자동 알림입니다.</p>
+          <p>다가오는 주요 업무 일정을 안내해 드립니다.<br>
           기한 내에 처리가 완료될 수 있도록 확인 부탁드립니다.</p>
           
           <hr style="border: 1px solid #eee; margin: 20px 0;">
