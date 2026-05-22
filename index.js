@@ -18,7 +18,7 @@ const retoolLink = "https://tjddnd97.retool.com/embedded/public/2ffe3b2d-4793-4c
 console.log("🚀 로봇이 정상 가동되었습니다. (D-5, D-1, 당일 3회 알림 모드)");
 
 // ⏰ 매일 아침 9시 정각 실행
-cron.schedule('35 11 * * *', async () => {
+cron.schedule('0 9 * * *', async () => {
   console.log("⏰ 정각 알림 로봇이 발송 작업을 시작합니다.");
   
   // 한국 시간 기준으로 오늘(D-Day), 내일(D-1), 5일 뒤(D-5) 날짜 구하기
