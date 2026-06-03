@@ -130,17 +130,16 @@ cron.schedule('0 9 * * *', async () => {
   timezone: "Asia/Seoul"
 });
 
-// ... (기존 메일 발송 for문 코드 끝나는 곳) ...
+// -------------------------------------------------------------------
+// 🛡️ [추가된 코드] 호스팅 서버의 강제 종료(SIGTERM) 방지용 더미 웹 서버
+// -------------------------------------------------------------------
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.end('알림 봇이 정상적으로 살아있습니다! 🤖\n');
+});
 
-  // 🛡️ [무료 플랜 방지용] Supabase에 확실한 쓰기(UPDATE) 활동 발자국 남기기
-  const pingResult = await supabase
-    .from('tasks')
-    .update({ due_date: todayStr }) // 오늘 날짜로 덮어쓰기
-    .eq('task_name', '로봇 생존신고');
-    
-  console.log("🛡️ Supabase 활동 기록(생존신고) 업데이트 완료!");
-
-}, {
-  scheduled: true,
-  timezone: "Asia/Seoul"
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🌐 포트 ${PORT} 개방 완료: 서버 강제 종료 방지 시스템 가동 중`);
 });
