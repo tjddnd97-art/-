@@ -129,3 +129,18 @@ cron.schedule('0 9 * * *', async () => {
   scheduled: true,
   timezone: "Asia/Seoul"
 });
+
+// ... (기존 메일 발송 for문 코드 끝나는 곳) ...
+
+  // 🛡️ [무료 플랜 방지용] Supabase에 확실한 쓰기(UPDATE) 활동 발자국 남기기
+  const pingResult = await supabase
+    .from('tasks')
+    .update({ due_date: todayStr }) // 오늘 날짜로 덮어쓰기
+    .eq('task_name', '로봇 생존신고');
+    
+  console.log("🛡️ Supabase 활동 기록(생존신고) 업데이트 완료!");
+
+}, {
+  scheduled: true,
+  timezone: "Asia/Seoul"
+});
