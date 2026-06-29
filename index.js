@@ -1,8 +1,13 @@
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const resend = new Resend(process.env.RESEND_KEY);
+// 💡 깃허브 환경변수가 계속 안 읽힌다면 여기에 직접 값을 넣으세요 (가장 확실함)
+const supabaseUrl = process.env.SUPABASE_URL || 'https://cmsrcjomjvwqybjxvesm.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY || 'sb_secret_LJN_yv4obqstYBhKPKvD3Q_O6Z1-z-D;
+const resendKey = process.env.RESEND_KEY || 're_UFFxTFyu_FxR87HEc7YU2ZBbbeas1ovqb';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+const resend = new Resend(resendKey);
 
 const groupList = {
   "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com", "wowns508@hyundaigreenfood.com", "2511718@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"],
