@@ -1,0 +1,22 @@
+name: Financial Alert Bot
+on:
+  schedule:
+    - cron: '0 0 * * *' # UTC 기준 0시 = 한국 시간 오전 9시
+  workflow_dispatch: # 테스트용 수동 실행 버튼
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm install
+      - name: Run bot
+        run: node index.js # 실행할 파일명 (혹시 다르다면 수정하세요)
+        env:
+          RESEND_KEY: ${{ secrets.RESEND_KEY }}
+          # 필요한 다른 환경변수가 있다면 여기에 추가하세요
