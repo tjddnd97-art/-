@@ -1,23 +1,21 @@
 name: Financial Alert Bot
 on:
   schedule:
-    - cron: '0 0 * * *' # UTC 기준 0시 = 한국 시간 오전 9시
-  workflow_dispatch: # 테스트용 수동 실행 버튼
+    - cron: '0 0 * * *' # UTC 0시 = 한국시간 오전 9시
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      - name: Install dependencies
-        run: npm install
+          node-version: '20'
+      - run: npm install @supabase/supabase-js resend
       - name: Run bot
         run: node index.js
         env:
-          RESEND_KEY: ${{ secrets.RESEND_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          RESEND_KEY: ${{ secrets.RESEND_KEY }}
