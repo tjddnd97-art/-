@@ -1,26 +1,35 @@
-console.log("확인 - URL:", process.env.SUPABASE_URL ? "읽기 성공" : "읽기 실패");
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 
-// 환경변수 확인
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY || !process.env.RESEND_KEY) {
-  console.error("❌ 필수 환경변수가 누락되었습니다.");
+// 1. 환경변수 로드 및 확인 (디버깅용 로그 포함)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const resendKey = process.env.RESEND_KEY;
+
+console.log("--- [시스템 시작] 환경변수 체크 ---");
+console.log("SUPABASE_URL 존재 여부:", !!supabaseUrl);
+console.log("SUPABASE_KEY 존재 여부:", !!supabaseKey);
+console.log("RESEND_KEY 존재 여부:", !!resendKey);
+
+if (!supabaseUrl || !supabaseKey || !resendKey) {
+  console.error("❌ 필수 환경변수(URL, KEY, RESEND) 중 누락된 값이 있습니다. 설정을 확인하세요.");
   process.exit(1);
 }
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-const resend = new Resend(process.env.RESEND_KEY);
+const supabase = createClient(supabaseUrl, supabaseKey);
+const resend = new Resend(resendKey);
 
+// 2. 이메일 그룹 설정
 const groupList = {
   "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com", "wowns508@hyundaigreenfood.com", "2511718@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"],
   "세무": ["jay556@hyundaigreenfood.com", "shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com", "wldb7007@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"],
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"]
 };
-
 const retoolLink = "https://tjddnd97.retool.com/embedded/public/2ffe3b2d-4793-4cdb-8690-b174710c993f";
 
+// 3. 메일 발송 로직
 async function runBot() {
-  console.log("🚀 알림 봇 실행 시작");
+  console.log("⏰ 알림 작업을 시작합니다.");
 
   const getSeoulDateStr = (offsetDays = 0) => {
     const dt = new Date();
@@ -48,35 +57,35 @@ async function runBot() {
     if (task.task_name === '로봇 생존신고') continue;
 
     let targetEmails = [];
-    const managerInfo = task.manager_email.trim();
-    if (groupList[managerInfo]) targetEmails = groupList[managerInfo];
-    else if (managerInfo.includes('@')) targetEmails = managerInfo.split(',').map(e => e.trim());
-    else continue;
+    const managerInfo = task.manager_email ? task.manager_email.trim() : "";
+    
+    if (groupList[managerInfo]) {
+      targetEmails = groupList[managerInfo];
+    } else if (managerInfo.includes('@')) {
+      targetEmails = managerInfo.split(',').map(e => e.trim());
+    } else {
+      console.log(`알 수 없는 담당자: ${managerInfo}`);
+      continue;
+    }
 
     const dDayText = task.due_date === todayStr ? "D-Day" : (task.due_date === d1Str ? "D-1" : "D-5");
-    const highlightText = task.due_date === todayStr ? "오늘 마감!!!" : (task.due_date === d1Str ? "내일 마감" : "5일 후 마감");
-
+    
     await resend.emails.send({
       from: '재무알림봇 <noreply@hgfnoreply.com>',
       to: targetEmails,
       subject: `[업무 알림 - ${dDayText}] ${task.task_name}`,
-      html: `
-        <div style="font-family: sans-serif; line-height: 1.6;">
-          <p>📌 <b>[업무 상세 내용]</b></p>
-          <ul>
-            <li><b>업무명:</b> ${task.task_name}</li>
-            <li><b>마감일:</b> ${task.due_date} <span style="color: red;">(${highlightText})</span></li>
-            <li><b>담당부서:</b> ${managerInfo}</li>
-          </ul>
-          <p>🔗 <a href="${retoolLink}">캘린더 확인하기</a></p>
-        </div>`
+      html: `<div style="font-family: sans-serif;">
+              <p>업무명: ${task.task_name}</p>
+              <p>마감일: ${task.due_date}</p>
+              <p><a href="${retoolLink}">캘린더 확인하기</a></p>
+             </div>`
     });
 
     if (task.due_date === todayStr) {
       await supabase.from('tasks').update({ is_sent: true }).eq('id', task.id);
     }
   }
-  console.log("✅ 작업 완료");
+  console.log("✅ 모든 작업 완료");
 }
 
-runBot().catch(err => { console.error(err); process.exit(1); });
+runBot().catch(err => { console.error("❌ 치명적 에러:", err); process.exit(1); });
