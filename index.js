@@ -2,9 +2,9 @@ const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 
 // 1. 환경변수 로드 및 확인 (디버깅용 로그 포함)
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const resendKey = process.env.RESEND_KEY;
+const supabaseUrl = 'https://cmsrcjomjvwqybjxvesm.supabase.co';
+const supabaseKey = 'sb_secret_LJN_yv4obqstYBhKPKvD3Q_O6Z1-z-D';
+const resendKey = 're_UFFxTFyu_FxR87HEc7YU2ZBbbeas1ovqb'; // 실제 키
 
 console.log("--- [시스템 시작] 환경변수 체크 ---");
 console.log("SUPABASE_URL 존재 여부:", !!supabaseUrl);
