@@ -1,21 +1,21 @@
 name: Financial Alert Bot
 on:
   schedule:
-    - cron: '0 0 * * *' # UTC 0시 = 한국시간 오전 9시
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env: # 환경변수를 여기서 한 번에 설정 (모든 단계에서 접근 가능)
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+      RESEND_KEY: ${{ secrets.RESEND_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
-      - run: npm install @supabase/supabase-js resend
+      - run: npm install
       - name: Run bot
         run: node index.js
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          RESEND_KEY: ${{ secrets.RESEND_KEY }}
