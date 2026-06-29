@@ -1,3 +1,4 @@
+console.log("확인 - URL:", process.env.SUPABASE_URL ? "읽기 성공" : "읽기 실패");
 const { createClient } = require('@supabase/supabase-js');
 const { Resend } = require('resend');
 
