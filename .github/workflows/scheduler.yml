@@ -18,7 +18,7 @@ jobs:
         run: npm install
         
       - name: Run bot
-        run: node index.js
+        run: node bot.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
