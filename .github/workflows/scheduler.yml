@@ -16,7 +16,8 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Run bot
-        run: node index.js # 실행할 파일명 (혹시 다르다면 수정하세요)
+        run: node index.js
         env:
           RESEND_KEY: ${{ secrets.RESEND_KEY }}
-          # 필요한 다른 환경변수가 있다면 여기에 추가하세요
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
