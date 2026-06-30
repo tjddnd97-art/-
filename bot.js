@@ -25,7 +25,7 @@ async function runBot() {
   const { data: tasks, error } = await supabase
     .from('tasks')
     .select('*')
-    .in('due_date', [todayStr, d1Str, d5Str]) // 이 3가지 날짜에 해당하는 업무만 가져옴
+    .in('due_date', [todayStr, d1Str, d5Str]) 
     .eq('is_sent', false);
 
   if (error) throw error;
@@ -41,18 +41,37 @@ async function runBot() {
     else if (task.due_date === d1Str) dDayText = "D-1 (내일 마감)";
     else if (task.due_date === d5Str) dDayText = "D-5 (마감 5일 전)";
 
+    // 이메일 발송
     await resend.emails.send({
       from: '재무알림시스템 <noreply@hgffinance.bond>',
       to: targetEmails,
       subject: `[업무 알림] ${dDayText} - ${task.task_name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; border: 1px solid #ccc; padding: 20px;">
-          <h3>${task.task_name} 업무 마감 안내</h3>
-          <p>본 메일은 재무회계팀 업무 자동 알림 시스템에서 발송되었습니다.</p>
-          <p>현재 <b>${task.due_date}</b> 마감 예정인 업무입니다.</p>
-          <p><a href="https://bit.ly/3SDkant" style="color: #0066cc; text-decoration: none;"><b>👉 캘린더에서 상세 확인하기</b></a></p>
-          <hr style="margin-top: 20px;">
-          <p style="font-size: 12px; color: #777;">※ 이 메일은 자동 발송된 메시지이므로 회신하지 마십시오.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee;">
+          <h2 style="color: #333;">📊 업무 마감 현황 안내</h2>
+          <p>안녕하세요. 재무알림시스템입니다.</p>
+          <p>현재 아래 업무의 마감 기한이 임박하여 안내드립니다.</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tbody>
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 12px; background-color: #f9f9f9; width: 30%; font-weight: bold;">업무명</td>
+                <td style="border: 1px solid #ddd; padding: 12px;">${task.task_name}</td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 12px; background-color: #f9f9f9; font-weight: bold;">마감일</td>
+                <td style="border: 1px solid #ddd; padding: 12px;">${task.due_date}</td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 12px; background-color: #f9f9f9; font-weight: bold;">구분</td>
+                <td style="border: 1px solid #ddd; padding: 12px;">${dDayText}</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <p style="font-size: 13px; color: #777; margin-top: 30px;">
+            ※ 본 메일은 시스템에 의해 자동 발송되었습니다. 회신하지 마십시오.
+          </p>
         </div>
       `
     });
