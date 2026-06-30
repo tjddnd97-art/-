@@ -10,7 +10,7 @@ const groupList = {
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"]
 };
 
-// 캘린더 생성 함수 (업무 매칭 로직 강화 및 빈칸 채우기 완벽 대응)
+// 캘린더 생성 함수 (색상 자동 분류 및 텍스트 줄바꿈 적용)
 function generateCalendarHTML(year, monthIndex, allTasks) {
   const firstDay = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
@@ -27,8 +27,6 @@ function generateCalendarHTML(year, monthIndex, allTasks) {
   // 날짜 및 업무 그리기
   for(let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    
-    // 수파베이스에서 가져온 데이터 중 해당 날짜(YYYY-MM-DD)와 일치하는 것 필터링
     const tasksForDay = allTasks.filter(t => t.due_date && t.due_date.substring(0, 10) === dateStr);
     
     if((day + firstDay - 1) % 7 === 0 && day !== 1) html += `</tr><tr>`;
@@ -37,7 +35,23 @@ function generateCalendarHTML(year, monthIndex, allTasks) {
                <div style="font-weight:bold; margin-bottom:5px; color:#333;">${day}</div>`;
                
     tasksForDay.forEach(t => {
-      html += `<div style="background:#e3f2fd; padding:3px; margin-bottom:3px; border-radius:3px; color:#1565c0; font-size:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;" title="${t.task_name}">• ${t.task_name}</div>`;
+      // 1. 담당 파트 감지
+      const groupName = t.manager_email ? t.manager_email.trim() : "";
+      
+      // 2. 파트별 색상 지정 (기본값: 회색)
+      let bgColor = "#607d8b"; 
+      let textColor = "#ffffff";
+
+      if (groupName === "관리") {
+        bgColor = "#1976D2"; // 파란색
+      } else if (groupName === "결산") {
+        bgColor = "#212121"; // 검정색
+      } else if (groupName === "세무") {
+        bgColor = "#2E7D32"; // 초록색
+      }
+
+      // 3. 텍스트 줄바꿈(white-space: normal) 처리하여 잘림 방지
+      html += `<div style="background:${bgColor}; color:${textColor}; padding:4px; margin-bottom:4px; border-radius:3px; font-size:11px; line-height:1.3; white-space:normal; word-break:keep-all;">${t.task_name}</div>`;
     });
     
     html += `</td>`;
@@ -65,7 +79,6 @@ async function runBot() {
   const d1Str = getSeoulDateStr(1);
   const d5Str = getSeoulDateStr(5);
 
-  // 1. 발송 대상 업무 조회 (오늘, 내일, 5일 뒤)
   const { data: targetTasks, error } = await supabase
     .from('tasks')
     .select('*')
@@ -75,15 +88,12 @@ async function runBot() {
   if (error) throw error;
   if (!targetTasks || targetTasks.length === 0) return console.log("오늘 발송할 알림이 없습니다.");
 
-  // 2. 대상 업무별로 메일 발송
   for (const task of targetTasks) {
     let targetEmails = groupList[task.manager_email?.trim()] || task.manager_email?.split(',').map(e => e.trim());
     if (!targetEmails) continue;
 
-    // 해당 업무의 연도와 월 추출
     const [year, month] = task.due_date.split('-').map(Number);
     
-    // [핵심 해결] 해당 월의 1일과 마지막 날짜를 정확히 계산하여 전체 업무 가져오기
     const firstDayStr = `${year}-${String(month).padStart(2, '0')}-01`;
     const lastDayOfMonth = new Date(year, month, 0).getDate();
     const lastDayStr = `${year}-${String(month).padStart(2, '0')}-${String(lastDayOfMonth).padStart(2, '0')}`;
@@ -94,9 +104,6 @@ async function runBot() {
       .gte('due_date', firstDayStr)
       .lte('due_date', lastDayStr);
       
-    console.log(`[디버그] ${year}년 ${month}월 데이터 ${monthTasks ? monthTasks.length : 0}개 가져옴`);
-
-    // 캘린더 생성 (month - 1 을 넘겨주는 이유는 Date 객체 규칙 때문)
     const calendarHTML = generateCalendarHTML(year, month - 1, monthTasks || []);
 
     let dDayText = task.due_date === todayStr ? "오늘 마감" : task.due_date === d1Str ? "내일 마감" : "마감 5일 전";
@@ -106,7 +113,7 @@ async function runBot() {
       to: targetEmails,
       subject: `[업무 알림] ${dDayText} - ${task.task_name}`,
       html: `
-        <div style="font-family: 'Malgun Gothic', sans-serif; max-width: 700px; padding: 20px; border: 1px solid #ddd; background:#fff;">
+        <div style="font-family: 'Malgun Gothic', sans-serif; max-width: 800px; padding: 20px; border: 1px solid #ddd; background:#fff;">
           <h2 style="margin-top:0; color:#333;">📅 마감 임박 업무 안내</h2>
           <p style="font-size:14px; color:#555;"><b>[${task.task_name}]</b> 업무가 <b>${task.due_date}</b>에 마감됩니다.</p>
           ${calendarHTML}
@@ -115,7 +122,6 @@ async function runBot() {
       `
     });
 
-    // 당일(오늘) 마감인 업무만 is_sent를 true로 변경
     if (task.due_date === todayStr) {
       await supabase.from('tasks').update({ is_sent: true }).eq('id', task.id);
     }
