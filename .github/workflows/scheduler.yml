@@ -1,7 +1,9 @@
 name: Financial Alert Bot
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:     # 수동 실행 버튼 (테스트용)
+  schedule:
+    - cron: '0 0 * * *'  # 매일 UTC 0시 = 한국 시간 오전 9시 자동 실행
 
 jobs:
   build:
@@ -13,7 +15,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Node 20
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
