@@ -100,3 +100,9 @@ async function runBot() {
 }
 
 runBot().catch(err => { console.error(err); process.exit(1); });
+
+// 기존 코드 바로 밑에 추가해보세요
+  console.log("가져온 전체 업무 수:", allMonthTasks ? allMonthTasks.length : 0);
+  if (allMonthTasks && allMonthTasks.length > 0) {
+    console.log("첫 번째 업무 데이터:", allMonthTasks[0]);
+  }
