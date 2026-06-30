@@ -10,25 +10,37 @@ const groupList = {
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"]
 };
 
-// 연도와 월(0부터 시작)을 인자로 받아 달력을 생성하는 함수
-function generateCalendarHTML(year, month) {
+// [수정됨] 해당 달의 업무 전체를 넣어서 달력을 그려주는 함수
+function generateCalendarHTML(year, month, allTasks) {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   
-  let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center; margin-top:15px;">`;
-  html += `<tr><th colspan="7" style="padding-bottom:10px; font-size:16px;">${year}년 ${month + 1}월</th></tr>`;
-  html += `<tr style="background:#f2f2f2;"><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr><tr>`;
+  let html = `<table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left; margin-top:15px; border:1px solid #ccc;">`;
+  html += `<tr><th colspan="7" style="padding:10px; font-size:16px; text-align:center; background:#eee;">${year}년 ${month + 1}월</th></tr>`;
+  html += `<tr style="background:#f9f9f9;">${['일','월','화','수','목','금','토'].map(d => `<th style="padding:5px; border:1px solid #ddd; text-align:center;">${d}</th>`).join('')}</tr><tr>`;
   
-  for(let i=0; i<firstDay; i++) html += `<td></td>`;
+  for(let i=0; i<firstDay; i++) html += `<td style="border:1px solid #ddd; height:80px;"></td>`;
+  
   for(let day=1; day<=daysInMonth; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    // 해당 날짜에 있는 업무들만 필터링
+    const tasksForDay = allTasks.filter(t => t.due_date === dateStr);
+    
     if((day + firstDay - 1) % 7 === 0) html += `</tr><tr>`;
-    html += `<td style="border:1px solid #ddd; padding:8px;">${day}</td>`;
+    
+    html += `<td style="border:1px solid #ddd; padding:5px; vertical-align:top; height:80px; width:14%;">
+               <div style="font-weight:bold; margin-bottom:5px;">${day}</div>
+               ${tasksForDay.map(t => `<div style="background:#e3f2fd; padding:2px; margin-bottom:2px; border-radius:3px; color:#1565c0; overflow:hidden; white-space:nowrap;">• ${t.task_name}</div>`).join('')}
+             </td>`;
   }
   html += `</tr></table>`;
   return html;
 }
 
 async function runBot() {
+  const today = new Date();
+  
+  // 1. 필요한 날짜 계산
   const getSeoulDateStr = (offsetDays = 0) => {
     const dt = new Date();
     dt.setDate(dt.getDate() + offsetDays);
@@ -39,23 +51,32 @@ async function runBot() {
   const d1Str = getSeoulDateStr(1);
   const d5Str = getSeoulDateStr(5);
 
-  const { data: tasks, error } = await supabase
+  // 2. 검색 대상 업무 가져오기
+  const { data: targetTasks, error } = await supabase
     .from('tasks')
     .select('*')
     .in('due_date', [todayStr, d1Str, d5Str])
     .eq('is_sent', false);
 
   if (error) throw error;
-  if (!tasks || tasks.length === 0) return console.log("발송할 알림이 없습니다.");
+  if (!targetTasks || targetTasks.length === 0) return console.log("발송할 알림이 없습니다.");
 
-  for (const task of tasks) {
+  // 3. [추가] 달력에 보여줄 전체 업무 데이터 가져오기 (해당 월 전체)
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const { data: allMonthTasks } = await supabase
+    .from('tasks')
+    .select('*')
+    .gte('due_date', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`)
+    .lte('due_date', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-31`);
+
+  for (const task of targetTasks) {
     let targetEmails = groupList[task.manager_email?.trim()] || task.manager_email?.split(',').map(e => e.trim());
     if (!targetEmails) continue;
 
-    // 마감일에서 연, 월 추출 (due_date가 YYYY-MM-DD 형식이라고 가정)
-    const [y, m, d] = task.due_date.split('-').map(Number);
-    // 달력 생성 (m-1 하는 이유는 Date 객체에서 월이 0부터 시작하기 때문)
-    const calendarHTML = generateCalendarHTML(y, m - 1);
+    // 해당 업무의 마감일에 맞춰 달력 생성
+    const [y, m] = task.due_date.split('-').map(Number);
+    const calendarHTML = generateCalendarHTML(y, m - 1, allMonthTasks || []);
 
     let dDayText = task.due_date === todayStr ? "오늘 마감" : task.due_date === d1Str ? "내일 마감" : "마감 5일 전";
 
@@ -64,8 +85,8 @@ async function runBot() {
       to: targetEmails,
       subject: `[업무 알림] ${dDayText} - ${task.task_name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 500px; padding: 20px; border: 1px solid #ccc;">
-          <h2 style="margin-top:0;">📅 마감 예정 업무</h2>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #ccc;">
+          <h2 style="margin-top:0;">📅 마감 임박 업무 안내</h2>
           <p><b>${task.task_name}</b> 업무가 <b>${task.due_date}</b>에 마감됩니다.</p>
           ${calendarHTML}
           <p style="font-size: 12px; color: #666; margin-top: 20px;">※ 자동 발송된 메시지입니다.</p>
