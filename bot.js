@@ -10,73 +10,69 @@ const groupList = {
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"]
 };
 
+// 연도와 월(0부터 시작)을 인자로 받아 달력을 생성하는 함수
+function generateCalendarHTML(year, month) {
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  
+  let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center; margin-top:15px;">`;
+  html += `<tr><th colspan="7" style="padding-bottom:10px; font-size:16px;">${year}년 ${month + 1}월</th></tr>`;
+  html += `<tr style="background:#f2f2f2;"><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr><tr>`;
+  
+  for(let i=0; i<firstDay; i++) html += `<td></td>`;
+  for(let day=1; day<=daysInMonth; day++) {
+    if((day + firstDay - 1) % 7 === 0) html += `</tr><tr>`;
+    html += `<td style="border:1px solid #ddd; padding:8px;">${day}</td>`;
+  }
+  html += `</tr></table>`;
+  return html;
+}
+
 async function runBot() {
-  // 한국 시간 기준 날짜 계산
   const getSeoulDateStr = (offsetDays = 0) => {
     const dt = new Date();
     dt.setDate(dt.getDate() + offsetDays);
     return dt.toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
   };
 
-  const todayStr = getSeoulDateStr(0);  // D-Day (당일)
-  const d1Str = getSeoulDateStr(1);     // D-1 (내일이 마감인 업무)
-  const d5Str = getSeoulDateStr(5);     // D-5 (5일 뒤가 마감인 업무)
+  const todayStr = getSeoulDateStr(0);
+  const d1Str = getSeoulDateStr(1);
+  const d5Str = getSeoulDateStr(5);
 
   const { data: tasks, error } = await supabase
     .from('tasks')
     .select('*')
-    .in('due_date', [todayStr, d1Str, d5Str]) 
+    .in('due_date', [todayStr, d1Str, d5Str])
     .eq('is_sent', false);
 
   if (error) throw error;
-  if (!tasks || tasks.length === 0) return console.log("오늘 발송할 알림이 없습니다.");
+  if (!tasks || tasks.length === 0) return console.log("발송할 알림이 없습니다.");
 
   for (const task of tasks) {
     let targetEmails = groupList[task.manager_email?.trim()] || task.manager_email?.split(',').map(e => e.trim());
     if (!targetEmails) continue;
 
-    // 제목에 D-Day 표시하기
-    let dDayText = "";
-    if (task.due_date === todayStr) dDayText = "D-Day (오늘 마감)";
-    else if (task.due_date === d1Str) dDayText = "D-1 (내일 마감)";
-    else if (task.due_date === d5Str) dDayText = "D-5 (마감 5일 전)";
+    // 마감일에서 연, 월 추출 (due_date가 YYYY-MM-DD 형식이라고 가정)
+    const [y, m, d] = task.due_date.split('-').map(Number);
+    // 달력 생성 (m-1 하는 이유는 Date 객체에서 월이 0부터 시작하기 때문)
+    const calendarHTML = generateCalendarHTML(y, m - 1);
 
-    // 이메일 발송
+    let dDayText = task.due_date === todayStr ? "오늘 마감" : task.due_date === d1Str ? "내일 마감" : "마감 5일 전";
+
     await resend.emails.send({
       from: '재무알림시스템 <noreply@hgffinance.bond>',
       to: targetEmails,
       subject: `[업무 알림] ${dDayText} - ${task.task_name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; border: 1px solid #eee;">
-          <h2 style="color: #333;">📊 업무 마감 현황 안내</h2>
-          <p>안녕하세요. 재무알림시스템입니다.</p>
-          <p>현재 아래 업무의 마감 기한이 임박하여 안내드립니다.</p>
-          
-          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-            <tbody>
-              <tr>
-                <td style="border: 1px solid #ddd; padding: 12px; background-color: #f9f9f9; width: 30%; font-weight: bold;">업무명</td>
-                <td style="border: 1px solid #ddd; padding: 12px;">${task.task_name}</td>
-              </tr>
-              <tr>
-                <td style="border: 1px solid #ddd; padding: 12px; background-color: #f9f9f9; font-weight: bold;">마감일</td>
-                <td style="border: 1px solid #ddd; padding: 12px;">${task.due_date}</td>
-              </tr>
-              <tr>
-                <td style="border: 1px solid #ddd; padding: 12px; background-color: #f9f9f9; font-weight: bold;">구분</td>
-                <td style="border: 1px solid #ddd; padding: 12px;">${dDayText}</td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <p style="font-size: 13px; color: #777; margin-top: 30px;">
-            ※ 본 메일은 시스템에 의해 자동 발송되었습니다. 회신하지 마십시오.
-          </p>
+        <div style="font-family: Arial, sans-serif; max-width: 500px; padding: 20px; border: 1px solid #ccc;">
+          <h2 style="margin-top:0;">📅 마감 예정 업무</h2>
+          <p><b>${task.task_name}</b> 업무가 <b>${task.due_date}</b>에 마감됩니다.</p>
+          ${calendarHTML}
+          <p style="font-size: 12px; color: #666; margin-top: 20px;">※ 자동 발송된 메시지입니다.</p>
         </div>
       `
     });
 
-    // 당일(D-Day)에 메일을 보낸 경우에만 is_sent를 true로 바꿔서 이후에 다시 안 보내게 함
     if (task.due_date === todayStr) {
       await supabase.from('tasks').update({ is_sent: true }).eq('id', task.id);
     }
