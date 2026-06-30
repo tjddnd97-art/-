@@ -50,7 +50,7 @@ async function runBot() {
           <h3>${task.task_name} 업무 마감 안내</h3>
           <p>본 메일은 재무회계팀 업무 자동 알림 시스템에서 발송되었습니다.</p>
           <p>현재 <b>${task.due_date}</b> 마감 예정인 업무입니다.</p>
-          <p><a href="https://tjddnd97.retool.com/embedded/public/2ffe3b2d-4793-4cdb-8690-b174710c993f" style="color: #0066cc; text-decoration: none;"><b>👉 캘린더에서 상세 확인하기</b></a></p>
+          <p><a href="https://bit.ly/3SDkant" style="color: #0066cc; text-decoration: none;"><b>👉 캘린더에서 상세 확인하기</b></a></p>
           <hr style="margin-top: 20px;">
           <p style="font-size: 12px; color: #777;">※ 이 메일은 자동 발송된 메시지이므로 회신하지 마십시오.</p>
         </div>
