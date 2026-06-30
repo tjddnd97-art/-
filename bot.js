@@ -10,7 +10,7 @@ const groupList = {
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"]
 };
 
-// 캘린더 생성 함수 (색상 자동 분류 및 텍스트 줄바꿈 적용)
+// 캘린더 생성 함수 (색상 자동 분류 및 텍스트 줄바꿈 적용 - 이전과 동일)
 function generateCalendarHTML(year, monthIndex, allTasks) {
   const firstDay = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
@@ -19,12 +19,10 @@ function generateCalendarHTML(year, monthIndex, allTasks) {
   html += `<tr><th colspan="7" style="padding:10px; font-size:16px; text-align:center; background:#eee;">${year}년 ${monthIndex + 1}월</th></tr>`;
   html += `<tr style="background:#f9f9f9;">${['일','월','화','수','목','금','토'].map(d => `<th style="padding:5px; border:1px solid #ddd; text-align:center; width:14%;">${d}</th>`).join('')}</tr><tr>`;
   
-  // 첫째 주 빈칸 그리기
   for(let i = 0; i < firstDay; i++) {
     html += `<td style="border:1px solid #ddd; height:80px; background:#fafafa;"></td>`;
   }
   
-  // 날짜 및 업무 그리기
   for(let day = 1; day <= daysInMonth; day++) {
     const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const tasksForDay = allTasks.filter(t => t.due_date && t.due_date.substring(0, 10) === dateStr);
@@ -35,29 +33,20 @@ function generateCalendarHTML(year, monthIndex, allTasks) {
                <div style="font-weight:bold; margin-bottom:5px; color:#333;">${day}</div>`;
                
     tasksForDay.forEach(t => {
-      // 1. 담당 파트 감지
       const groupName = t.manager_email ? t.manager_email.trim() : "";
-      
-      // 2. 파트별 색상 지정 (기본값: 회색)
       let bgColor = "#607d8b"; 
       let textColor = "#ffffff";
 
-      if (groupName === "관리") {
-        bgColor = "#1976D2"; // 파란색
-      } else if (groupName === "결산") {
-        bgColor = "#212121"; // 검정색
-      } else if (groupName === "세무") {
-        bgColor = "#2E7D32"; // 초록색
-      }
+      if (groupName === "관리") bgColor = "#1976D2";
+      else if (groupName === "결산") bgColor = "#212121";
+      else if (groupName === "세무") bgColor = "#2E7D32";
 
-      // 3. 텍스트 줄바꿈(white-space: normal) 처리하여 잘림 방지
       html += `<div style="background:${bgColor}; color:${textColor}; padding:4px; margin-bottom:4px; border-radius:3px; font-size:11px; line-height:1.3; white-space:normal; word-break:keep-all;">${t.task_name}</div>`;
     });
     
     html += `</td>`;
   }
   
-  // 마지막 주 남은 빈칸 그리기
   const totalCells = firstDay + daysInMonth;
   const remainingCells = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
   for(let i = 0; i < remainingCells; i++) {
@@ -89,7 +78,8 @@ async function runBot() {
   if (!targetTasks || targetTasks.length === 0) return console.log("오늘 발송할 알림이 없습니다.");
 
   for (const task of targetTasks) {
-    let targetEmails = groupList[task.manager_email?.trim()] || task.manager_email?.split(',').map(e => e.trim());
+    const groupName = task.manager_email ? task.manager_email.trim() : "미지정";
+    let targetEmails = groupList[groupName] || task.manager_email?.split(',').map(e => e.trim());
     if (!targetEmails) continue;
 
     const [year, month] = task.due_date.split('-').map(Number);
@@ -106,17 +96,50 @@ async function runBot() {
       
     const calendarHTML = generateCalendarHTML(year, month - 1, monthTasks || []);
 
-    let dDayText = task.due_date === todayStr ? "오늘 마감" : task.due_date === d1Str ? "내일 마감" : "마감 5일 전";
+    // 남은 기간에 따른 텍스트 및 스타일 설정
+    let dDayText = "";
+    let subjectDDay = "";
+    let dDayStyle = "";
 
+    if (task.due_date === todayStr) {
+      dDayText = "오늘 마감!!!";
+      subjectDDay = "D-Day";
+      dDayStyle = "color: #e53935; font-weight: bold;"; // 빨간색 강조
+    } else if (task.due_date === d1Str) {
+      dDayText = "내일 마감!";
+      subjectDDay = "D-1";
+      dDayStyle = "color: #fb8c00; font-weight: bold;"; // 주황색 강조
+    } else {
+      dDayText = "마감 5일 전";
+      subjectDDay = "D-5";
+      dDayStyle = "color: #1e88e5; font-weight: bold;"; // 파란색 강조
+    }
+
+    // 메일 발송
     await resend.emails.send({
       from: '재무알림시스템 <noreply@hgffinance.bond>',
       to: targetEmails,
-      subject: `[업무 알림] ${dDayText} - ${task.task_name}`,
+      subject: `[업무 알림 - ${subjectDDay}] [${groupName}] ${task.task_name}`,
       html: `
-        <div style="font-family: 'Malgun Gothic', sans-serif; max-width: 800px; padding: 20px; border: 1px solid #ddd; background:#fff;">
-          <h2 style="margin-top:0; color:#333;">📅 마감 임박 업무 안내</h2>
-          <p style="font-size:14px; color:#555;"><b>[${task.task_name}]</b> 업무가 <b>${task.due_date}</b>에 마감됩니다.</p>
+        <div style="font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; max-width: 800px; padding: 20px; border: 1px solid #ddd; background:#fff;">
+          
+          <p style="font-size:14px; color:#333; line-height:1.6; margin-top:0;">
+            안녕하세요, 재무회계파트 업무일정 자동 알림입니다.<br>
+            다가오는 주요 업무 일정을 안내해 드립니다.<br>
+            기한 내에 처리가 완료될 수 있도록 확인 부탁드립니다.
+          </p>
+
+          <hr style="border: 0; border-top: 1px dashed #ccc; margin: 25px 0;">
+
+          <h3 style="color:#333; margin-top:0; font-size:16px;">📌 [업무 상세 내용]</h3>
+          <ul style="font-size:14px; color:#333; line-height:1.8; margin-bottom: 30px;">
+            <li><b>업무명:</b> [${groupName}] ${task.task_name}</li>
+            <li><b>마감일:</b> ${task.due_date} <span style="${dDayStyle}">(${dDayText})</span></li>
+            <li><b>담당부서:</b> ${groupName}</li>
+          </ul>
+
           ${calendarHTML}
+
           <p style="font-size: 12px; color: #888; margin-top: 20px;">※ 본 메일은 시스템에 의해 자동 발송된 업무 알림입니다.</p>
         </div>
       `
