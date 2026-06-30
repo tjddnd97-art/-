@@ -10,7 +10,7 @@ const groupList = {
   "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"]
 };
 
-// 캘린더 생성 함수 (색상 자동 분류 및 텍스트 줄바꿈 적용 - 이전과 동일)
+// 캘린더 생성 함수 (기존과 동일)
 function generateCalendarHTML(year, monthIndex, allTasks) {
   const firstDay = new Date(year, monthIndex, 1).getDay();
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
@@ -84,19 +84,29 @@ async function runBot() {
 
     const [year, month] = task.due_date.split('-').map(Number);
     
+    // 💡 다음 달 연도 및 월 계산 (12월에서 1월로 넘어갈 때 연도 +1)
+    let nextYear = year;
+    let nextMonth = month + 1;
+    if (nextMonth > 12) {
+      nextMonth = 1;
+      nextYear += 1;
+    }
+    
+    // 이번 달 1일부터 다음 달 마지막 날까지 2개월치 데이터를 한 번에 가져오기
     const firstDayStr = `${year}-${String(month).padStart(2, '0')}-01`;
-    const lastDayOfMonth = new Date(year, month, 0).getDate();
-    const lastDayStr = `${year}-${String(month).padStart(2, '0')}-${String(lastDayOfMonth).padStart(2, '0')}`;
+    const lastDayOfNextMonth = new Date(nextYear, nextMonth, 0).getDate();
+    const lastDayStr = `${nextYear}-${String(nextMonth).padStart(2, '0')}-${String(lastDayOfNextMonth).padStart(2, '0')}`;
 
-    const { data: monthTasks } = await supabase
+    const { data: twoMonthsTasks } = await supabase
       .from('tasks')
       .select('*')
       .gte('due_date', firstDayStr)
       .lte('due_date', lastDayStr);
       
-    const calendarHTML = generateCalendarHTML(year, month - 1, monthTasks || []);
+    // 캘린더 두 개(이번 달, 다음 달) 생성
+    const currentMonthHTML = generateCalendarHTML(year, month - 1, twoMonthsTasks || []);
+    const nextMonthHTML = generateCalendarHTML(nextYear, nextMonth - 1, twoMonthsTasks || []);
 
-    // 남은 기간에 따른 텍스트 및 스타일 설정
     let dDayText = "";
     let subjectDDay = "";
     let dDayStyle = "";
@@ -104,15 +114,15 @@ async function runBot() {
     if (task.due_date === todayStr) {
       dDayText = "오늘 마감!!!";
       subjectDDay = "D-Day";
-      dDayStyle = "color: #e53935; font-weight: bold;"; // 빨간색 강조
+      dDayStyle = "color: #e53935; font-weight: bold;";
     } else if (task.due_date === d1Str) {
       dDayText = "내일 마감!";
       subjectDDay = "D-1";
-      dDayStyle = "color: #fb8c00; font-weight: bold;"; // 주황색 강조
+      dDayStyle = "color: #fb8c00; font-weight: bold;";
     } else {
       dDayText = "마감 5일 전";
       subjectDDay = "D-5";
-      dDayStyle = "color: #1e88e5; font-weight: bold;"; // 파란색 강조
+      dDayStyle = "color: #1e88e5; font-weight: bold;";
     }
 
     // 메일 발송
@@ -138,9 +148,14 @@ async function runBot() {
             <li><b>담당부서:</b> ${groupName}</li>
           </ul>
 
-          ${calendarHTML}
+          ${currentMonthHTML}
 
-          <p style="font-size: 12px; color: #888; margin-top: 20px;">※ 본 메일은 시스템에 의해 자동 발송된 업무 알림입니다.</p>
+          <div style="margin-top: 40px;">
+            <h3 style="color:#555; margin-bottom: 5px; font-size: 15px;">👉 다음 달 업무 미리보기</h3>
+            ${nextMonthHTML}
+          </div>
+
+          <p style="font-size: 12px; color: #888; margin-top: 30px;">※ 본 메일은 시스템에 의해 자동 발송된 업무 알림입니다.</p>
         </div>
       `
     });
