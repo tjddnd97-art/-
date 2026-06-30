@@ -42,7 +42,7 @@ async function runBot() {
     else if (task.due_date === d5Str) dDayText = "D-5 (마감 5일 전)";
 
     await resend.emails.send({
-      from: '재무알림시스템 <onboarding@resend.dev>',
+      from: '재무알림시스템 <noreply@hgffinance.bond>',
       to: targetEmails,
       subject: `[업무 알림] ${dDayText} - ${task.task_name}`,
       html: `
