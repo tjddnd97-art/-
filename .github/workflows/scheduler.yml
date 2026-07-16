@@ -1,25 +1,28 @@
-name: Financial Alert Bot
+name: 업무 알림 봇 실행
 
 on:
-  workflow_dispatch:     # 수동 실행 버튼 (테스트용)
   schedule:
-    - cron: '0 0 * * *'  # 매일 UTC 0시 = 한국 시간 오전 9시 자동 실행
+    - cron: '0 0 * * *' # 매일 한국시간 오전 9시 실행
+  workflow_dispatch: # 수동 실행 버튼
 
 jobs:
-  build:
+  run-bot:
     runs-on: ubuntu-latest
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-      RESEND_KEY: ${{ secrets.RESEND_KEY }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: 코드 가져오기
+        uses: actions/checkout@v3
+
+      - name: Node.js 세팅
+        uses: actions/setup-node@v3
         with:
-          node-version: '22'
-      - name: Install
-        run: npm install
-      - name: Run Bot
+          node-version: '18'
+
+      - name: 패키지 설치
+        run: npm install @supabase/supabase-js resend
+
+      - name: 봇 실행
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          RESEND_KEY: ${{ secrets.RESEND_KEY }}
         run: node bot.js
