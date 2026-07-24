@@ -2,7 +2,7 @@ name: 업무 알림 봇 실행
 
 on:
   schedule:
-    - cron: '0 0 * * *' # 매일 한국시간 오전 9시 실행
+    - cron: '30 23 * * *' # 매일 한국시간 오전 8시 30분 실행
   workflow_dispatch: # 수동 실행 버튼
 
 jobs:
