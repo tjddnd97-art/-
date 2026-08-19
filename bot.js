@@ -58,7 +58,12 @@ function generateCalendarHTML(year, monthIndex, allTasks) {
 }
 
 async function runBot() {
+  // 👉 [추가된 코드] 수파베이스 일시 정지 방지를 위한 '매일 출근 도장(데이터 수정)' 찍기
+  await supabase.from('keep_alive').update({ last_run: new Date().toISOString() }).eq('id', 1);
+  console.log("✅ 수파베이스 생존 신고(출근 도장) 완료!");
+
   const getSeoulDateStr = (offsetDays = 0) => {
+
     const dt = new Date();
     dt.setDate(dt.getDate() + offsetDays);
     return dt.toLocaleDateString('sv-SE', { timeZone: 'Asia/Seoul' });
