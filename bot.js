@@ -159,6 +159,12 @@ async function runBot() {
             <h3 style="color:#555; margin-bottom: 5px; font-size: 15px;">👉 다음 달 업무 미리보기</h3>
             ${nextMonthHTML}
           </div>
+          <!-- 💡 [추가된 부분] 리툴 캘린더 이동 버튼 -->
+          <div style="text-align: center; margin-top: 40px; margin-bottom: 20px;">
+            <a href="https://tjddnd97.retool.com/embedded/public/2ffe3b2d-4793-4cdb-8690-b174710c993f" target="_blank" style="background-color: #2E7D32; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px; display: inline-block;">
+              📅 전체 월별 캘린더 (웹) 보러가기
+            </a>
+          </div>
 
           <p style="font-size: 12px; color: #888; margin-top: 30px;">※ 본 메일은 시스템에 의해 자동 발송된 업무 알림입니다.</p>
         </div>
