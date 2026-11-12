@@ -8,14 +8,29 @@ on:
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
+      - name: 예약 및 실제 실행 시각 확인
+        env:
+          SCHEDULED_CRON: ${{ github.event.schedule }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          echo "이벤트 종류: $EVENT_NAME"
+          echo "설정된 cron: $SCHEDULED_CRON"
+          echo "Run ID: $RUN_ID"
+          echo "실제 UTC 시작 시각: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "실제 한국 시작 시각: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
+
       - name: 코드 가져오기
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Node.js 세팅
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
+          cache: npm
 
       - name: 패키지 설치
         run: npm install @supabase/supabase-js resend
@@ -26,3 +41,9 @@ jobs:
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
           RESEND_KEY: ${{ secrets.RESEND_KEY }}
         run: node bot.js
+
+      - name: 작업 완료 시각 확인
+        if: always()
+        run: |
+          echo "완료 UTC 시각: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "완료 한국 시각: $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S KST')"
