@@ -5,9 +5,9 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 const resend = new Resend(process.env.RESEND_KEY);
 
 const groupList = {
-  "관리": ["1924518@hyundaigreenfood.com", "2245770@hyundaigreenfood.com", "wowns508@hyundaigreenfood.com", "2511718@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"],
-  "세무": ["jay556@hyundaigreenfood.com", "shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com", "wldb7007@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"],
-  "결산": ["1101603@hyundaigreenfood.com", "1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com", "jhjang@hyundaigreenfood.com"]
+  "관리": ["1924518@hyundaigreenfood.com", "twin7288@hyundaigreenfood.com", "jas0nahn@hyundaigreenfood.com", "wldb7007@hyundaigreenfood.com"],
+  "세무": ["jay556@hyundaigreenfood.com", "shindongwon@hyundaigreenfood.com", "raebin0511@hyundaigreenfood.com", "rlarjsdn2607@hyundaigreenfood.com"],
+  "결산": ["1519732@hyundaigreenfood.com", "yousc91@hyundaigreenfood.com","comedaking@hyundaigreenfood.com", "tjddnd97@hyundaigreenfood.com"]
 };
 
 // 캘린더 생성 함수 (기존과 동일)
